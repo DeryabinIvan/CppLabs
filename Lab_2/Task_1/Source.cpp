@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -9,7 +10,7 @@ int main() {
 
 	int* m = new int[n];
 
-	int max=-999999999, ind=0;
+	int max=INT_MIN, ind=0;
 	for (int i = 0; i < n; i++){
 		cin >> m[i];
 
@@ -36,6 +37,8 @@ int main() {
 
 	cout << "Sum: " << sum << " Mul: " << mul << endl;
 	system("pause");
+
+	delete[] m;
 
 	return 0;
 }
