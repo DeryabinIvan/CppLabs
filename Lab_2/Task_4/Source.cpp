@@ -1,16 +1,16 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <limits>
 
 using namespace std;
 
-/* Тестовые данные:
+/* РўРµСЃС‚РѕРІС‹Рµ РґР°РЅРЅС‹Рµ:
 4
 0 -1  5 20
 -4 11 15 -5
 76 23 -10 10
 55 42 1 100
 
-Что должно вывести: MAX: 76 MIN: -4
+Р§С‚Рѕ РґРѕР»Р¶РЅРѕ РІС‹РІРµСЃС‚Рё: MAX: 76 MIN: -4
 */
 
 int main() {
@@ -46,7 +46,7 @@ int main() {
 					if (line[j] > max) max = line[j];
 				}
 				
-			else //ошибка где-то здесь...
+			else //РѕС€РёР±РєР° РіРґРµ-С‚Рѕ Р·РґРµСЃСЊ...
 				if (j < l_size) {
 					if (line[j] < min) min = line[j];
 				} else {
