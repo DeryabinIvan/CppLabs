@@ -47,7 +47,7 @@ int main() {
 				}
 				
 			else //ошибка где-то здесь...
-				if (j < l_size) {
+				if (j > l_size) {
 					if (line[j] < min) min = line[j];
 				} else {
 					if (line[j] > max) max = line[j];
