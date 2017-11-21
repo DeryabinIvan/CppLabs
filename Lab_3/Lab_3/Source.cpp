@@ -4,7 +4,7 @@
 using namespace std;
 
 //в задании указано использовать стек
-//встроенный использовать нельз¤ (а его вроде и нет), поэтому написал свой
+//встроенный использовать нельзя (а его вроде и нет), поэтому написал свой
 typedef struct stack {
 	stack(int size) {
 		s = new char[size];
@@ -78,8 +78,8 @@ int main() {
 	//r_bkt.print();
 	//l_bkt.print();
 
-	if (r_bkt.isEmpty() && l_bkt.isEmpty()) fout << "ѕ–ј¬»Ћ№Ќќ";
-	else fout << "Ќ≈ѕ–ј¬»Ћ№Ќќ";
+	if (r_bkt.isEmpty() && l_bkt.isEmpty()) fout << "ПРАВИЛЬНО";
+	else fout << "НЕПРАВИЛЬНО";
 
 	fin.close();
 	fout.close();
