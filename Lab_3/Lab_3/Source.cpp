@@ -15,8 +15,14 @@ typedef struct stack {
 	bool isEmpty() { return positon ? false : true; }
 
 	void push(char c){
-		if (positon == length || positon + 1 == length) {
+		if (positon == length) {
+			char *tmp = s;
 			s = new char[length+5];
+
+			memcpy(s, tmp, sizeof(char)*length);
+
+			delete[] tmp;
+
 			length += 5;
 		}
 
@@ -46,7 +52,7 @@ int main() {
 	ifstream fin("INPUT.txt");
 	ofstream fout("OUTPUT.txt");
 
-	stack r_bkt(10), l_bkt(10);
+	stack r_bkt(2), l_bkt(2);
 	char line[999];
 	
 	while (!fin.eof()) {
@@ -70,13 +76,13 @@ int main() {
 		}
 	}
 
+	//r_bkt.print();
+	//l_bkt.print();
+
 	for (int i = 0; !r_bkt.isEmpty() && !l_bkt.isEmpty(); i++){
 		r_bkt.pop();
 		l_bkt.pop();
 	}
-
-	//r_bkt.print();
-	//l_bkt.print();
 
 	if (r_bkt.isEmpty() && l_bkt.isEmpty()) fout << "ПРАВИЛЬНО";
 	else fout << "НЕПРАВИЛЬНО";
