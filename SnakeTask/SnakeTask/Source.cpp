@@ -3,7 +3,7 @@
 
 using namespace std;
 
-//моя реализация списка
+//РјРѕСЏ СЂРµР°Р»РёР·Р°С†РёСЏ СЃРїРёСЃРєР°
 template<typename T> class List {
 	template<typename T> struct Node {
 		T data;
@@ -80,9 +80,9 @@ template<typename T> class List {
 			list_size--;
 		}
 
-		//Инструкция: при инициализации вызываем begin 
-		//затем получаем элемент при помощи getElement
-		//при достижении конца списка getElemnt возвращает nullptr
+		//РРЅСЃС‚СЂСѓРєС†РёСЏ: РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РІС‹Р·С‹РІР°РµРј begin 
+		//Р·Р°С‚РµРј РїРѕР»СѓС‡Р°РµРј СЌР»РµРјРµРЅС‚ РїСЂРё РїРѕРјРѕС‰Рё getElement
+		//РїСЂРё РґРѕСЃС‚РёР¶РµРЅРёРё РєРѕРЅС†Р° СЃРїРёСЃРєР° getElemnt РІРѕР·РІСЂР°С‰Р°РµС‚ nullptr
 		void begin() { position = 0; }
 		T* getElement() {
 			if (position > list_size) return nullptr;
