@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <random>
+#include <conio.h>
 
 using namespace std;
 
@@ -22,8 +24,8 @@ template<typename T> class List {
 		}
 	};
 	Node<T>* head;
-	size_t list_size = -1;
-	size_t position = 0;
+	size_t list_size = 0;
+	size_t position = 1;
 
 	public:
 		List() {
@@ -31,14 +33,18 @@ template<typename T> class List {
 			head->next = nullptr;
 		}
 		~List(){
-			while (list_size) removeLast();
+			while (list_size > 1) removeLast();
+			
+			head->next = nullptr;
 			delete head;
+
+			list_size = 0;
 		}
 
 		void addInEnd(T new_data) {
-			if (list_size == -1) {
+			if (!list_size) {
 				head->data = new_data;
-				list_size = 0;
+				list_size = 1;
 				return;
 			}
 
@@ -46,9 +52,9 @@ template<typename T> class List {
 			list_size++;
 		}
 		void addInStart(T new_data) {
-			if (list_size == -1) {
+			if (!list_size) {
 				head->data = new_data;
-				list_size = 0;
+				list_size = 1;
 				return;
 			}
 
@@ -80,6 +86,20 @@ template<typename T> class List {
 			list_size--;
 		}
 
+		void clear() {
+			if (!list_size) return;
+
+			while (list_size < 1) removeLast();
+
+			head->next = nullptr;
+			delete head;
+
+			list_size = 0;
+
+			head = new Node<T>;
+			head->next = nullptr;
+		}
+
 		//Инструкция: при инициализации вызываем begin 
 		//затем получаем элемент при помощи getElement
 		//при достижении конца списка getElemnt возвращает nullptr
@@ -95,6 +115,7 @@ template<typename T> class List {
 			return &(tmp->data);
 		}
 		
+		size_t getSize() { return list_size; }
 };
 
 struct Player {
@@ -102,7 +123,15 @@ struct Player {
 	unsigned int score;
 };
 
-void init();
+struct Food {
+	unsigned char x, y;
+};
+
+struct SnakePart {
+	unsigned char x, y;
+	char sym;
+};
+
 void readLeaders();
 void addLeader();
 void showLeaders();
@@ -111,11 +140,19 @@ void newGame();
 void clear() { system("cls"); }
 
 List<Player> leaders;
+List<SnakePart> snake;
+Food food;
 
-#define W_SIZE 25
-#define H_SIZE 30
+unsigned char hx, hy;
 
-char map[W_SIZE][H_SIZE];
+const unsigned char Y_SIZE = 30, X_SIZE = 20;
+
+//Генерация случайных координат еды
+//В С есть srand() и rand()...
+//Но мы же изучаем С++ и его средства...
+random_device device;
+mt19937 generator(device());
+uniform_int_distribution<> ran_x(1, X_SIZE-2), ran_y(1, Y_SIZE-2);
 
 enum MENU{START=1, BOARD, HELP, EXIT};
 
@@ -124,12 +161,8 @@ unsigned int score=0;
 int main() {
 	char menu_key;
 
-	init();
-
 	while (true){
 		printf("Menu:\n\t%d) New Game\n\t%d) Leaderboard\n\t%d) Help\n\t%d) Exit\n", START, BOARD, HELP, EXIT);
-
-		readLeaders();
 
 		cin >> menu_key;
 		clear();
@@ -137,13 +170,16 @@ int main() {
 			case START:
 				newGame();
 				addLeader();
+				leaders.clear();
+				readLeaders();
 				showLeaders();
 				break;
 			case BOARD:
+				if(!leaders.getSize()) readLeaders();
 				showLeaders();
 				break;
 			case HELP:
-				cout << "WASD - control" << endl;
+				cout << "WASD - control; X-exit" << endl;
 				cout << "That`s all ;)"<<endl;
 				break;
 			case EXIT:
@@ -154,25 +190,86 @@ int main() {
 }
 
 void update() {
-	for (int i = 0; i < W_SIZE; i++) {
-		for (int j = 0; j < H_SIZE; j++)
-			cout << map[i][j];
-		cout << endl;
-	}
+	snake.begin();
+	SnakePart* prt = snake.getElement();
+	do {
+		for (unsigned char i = 0; i < X_SIZE; i++){
+			for (unsigned char j = 0; j < Y_SIZE; j++) {
+				if (prt->x == i && prt->y == j) cout << prt->sym;
+				else if (food.x == i && food.y == j) cout << '@';
+				else if (i == 0) cout << '#';
+				else if (j == 0) cout << '#';
+				else if (i == X_SIZE-1) cout << '#';
+				else if (j == Y_SIZE-1) cout << '#';
+				else cout << ' ';
+			}
+			cout << endl;
+		}
+	} while (prt = snake.getElement());
 }
 
 void init() {
-	for (int i = 0; i < W_SIZE; i++){
-		map[0][i] = '-';
-		map[H_SIZE - 1][i] = '#';
-	}
-	update();
+	SnakePart head;
+	head.sym = 'S';
+	hx = head.x = 10; hy = head.y = 10;
+
+	snake.addInEnd(head);
+
+	food.x = ran_x(generator);
+	food.y = ran_y(generator);
 }
 
-
-
 void newGame() {
-	
+	init();
+	clear();
+	update();
+
+	snake.begin();
+	SnakePart* head = snake.getElement();
+
+	while (true){
+		char key;
+		
+		key = _getch();
+
+		switch (key){
+			case 'w':
+				head->x--;
+				break;
+			case 'a':
+				head->y--;
+				break;
+			case 's':
+				head->x++;
+				break;
+			case 'd':
+				head->y++;
+				break;
+
+			case 'x':
+				cout << "Exit the game? y/n ";
+				cin >> key;
+				if (key == 'y') {
+					snake.clear();
+					return;
+				}
+				break;
+		}
+
+		if (head->x == food.x && head->y == food.y) {
+			score++;
+			do{
+				food.x = ran_x(generator);
+				food.y = ran_y(generator);
+			} while (food.x == head->x || food.y == head->y);
+			
+		}
+
+		if (head->x == 0 || head->y == 0 || head->x == X_SIZE - 1 || head->y == Y_SIZE - 1) return;
+
+		clear();
+		update();
+	}
 }
 
 const char* LEADERS_FILE = "leader.brd";
@@ -185,8 +282,6 @@ void readLeaders() {
 
 		ofstream tmp(LEADERS_FILE);
 		tmp.close();
-
-		board.open(LEADERS_FILE);
 		return;
 	}
 
@@ -202,7 +297,11 @@ void readLeaders() {
 		score = strtok(nullptr, ";");
 
 		if (!name || !score) {
-			cerr << "Leaderboard file corrupted!" << endl;
+			if (!leaders.getSize()) {
+				cerr << "Leaderboard file corrupted!" << endl;
+				leaders.clear();
+			}
+			board.close();
 			return;
 		}
 
@@ -224,10 +323,9 @@ void readLeaders() {
 void addLeader() {
 	char buf[255];
 
+	cout << "Enter your name: ";
 	cin.ignore();
 	cin.getline(buf, 255);
-
-	ofstream board("leader.brd");
 
 	Player tmp;
 	tmp.name = new char[strlen(buf)];
@@ -237,18 +335,20 @@ void addLeader() {
 
 	leaders.addInEnd(tmp);
 
+	ofstream board("leader.brd");
 	leaders.begin();
 	Player* pl = leaders.getElement();
 	do {
-		board << pl->name << ';' << pl->score;
+		board << pl->name << ';' << pl->score << endl;
 	} while (pl = leaders.getElement());
-
-	leaders.~List();
-
-	readLeaders();
 }
 
 void showLeaders(){
+	if (!leaders.getSize()) {
+		cout << "Leaderboard is empty! O_o " << endl;
+		return;
+	}
+
 	leaders.begin();
 	Player* pl = leaders.getElement();
 	char pos = 1;
