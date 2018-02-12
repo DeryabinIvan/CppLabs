@@ -127,8 +127,11 @@ struct Food {
 	unsigned char x, y;
 };
 
+enum DIRECTION { UP, DOWN, LEFT, RIGTH };
+
 struct SnakePart {
 	unsigned char x, y;
+	DIRECTION dir;
 	char sym;
 };
 
@@ -169,6 +172,7 @@ int main() {
 		switch (menu_key-'0'){
 			case START:
 				newGame();
+				snake.clear();
 				addLeader();
 				leaders.clear();
 				readLeaders();
@@ -190,28 +194,38 @@ int main() {
 }
 
 void update() {
-	snake.begin();
-	SnakePart* prt = snake.getElement();
-	do {
-		for (unsigned char i = 0; i < X_SIZE; i++){
-			for (unsigned char j = 0; j < Y_SIZE; j++) {
-				if (prt->x == i && prt->y == j) cout << prt->sym;
-				else if (food.x == i && food.y == j) cout << '@';
+	bool drawed = false;
+	for (unsigned char i = 0; i < X_SIZE; i++){
+		for (unsigned char j = 0; j < Y_SIZE; j++) {
+			snake.begin();
+			SnakePart* prt = snake.getElement();
+			do {
+				if (prt->x == i && prt->y == j) {
+					cout << prt->sym;
+					drawed = true;
+					break;
+				}
+			}while (prt = snake.getElement());
+
+			if (!drawed) {
+				if (food.x == i && food.y == j) cout << '@';
 				else if (i == 0) cout << '#';
 				else if (j == 0) cout << '#';
-				else if (i == X_SIZE-1) cout << '#';
-				else if (j == Y_SIZE-1) cout << '#';
+				else if (i == X_SIZE - 1) cout << '#';
+				else if (j == Y_SIZE - 1) cout << '#';
 				else cout << ' ';
 			}
-			cout << endl;
+			drawed = false;
 		}
-	} while (prt = snake.getElement());
+		cout << endl;
+	}
 }
 
 void init() {
 	SnakePart head;
 	head.sym = 'S';
 	hx = head.x = 10; hy = head.y = 10;
+	head.dir = UP;
 
 	snake.addInEnd(head);
 
@@ -229,21 +243,22 @@ void newGame() {
 
 	while (true){
 		char key;
+		DIRECTION dir;
 		
 		key = _getch();
 
 		switch (key){
 			case 'w':
-				head->x--;
+				dir = UP;
 				break;
 			case 'a':
-				head->y--;
+				dir = LEFT;
 				break;
 			case 's':
-				head->x++;
+				dir = DOWN;
 				break;
 			case 'd':
-				head->y++;
+				dir = RIGTH;
 				break;
 
 			case 'x':
@@ -254,7 +269,38 @@ void newGame() {
 					return;
 				}
 				break;
+
+			default:
+				continue;
 		}
+
+		DIRECTION tmp;
+
+		snake.begin();
+		SnakePart* prt = snake.getElement();
+		do {
+			tmp = prt->dir;
+			prt->dir = dir;
+			dir = tmp;
+			switch (prt->dir){
+				case UP:
+					prt->x--;
+					break;
+				case DOWN:
+					prt->x++;
+					break;
+				case LEFT:
+					prt->y--;
+					break;
+				case RIGTH:
+					prt->y++;
+					break;
+			}
+		} while (prt = snake.getElement());
+
+		snake.begin();
+		prt = snake.getElement();
+		for (size_t i = snake.getSize(); i > 1; i--) prt = snake.getElement();
 
 		if (head->x == food.x && head->y == food.y) {
 			score++;
@@ -263,12 +309,72 @@ void newGame() {
 				food.y = ran_y(generator);
 			} while (food.x == head->x || food.y == head->y);
 			
+			SnakePart tail;
+			tail.dir = prt->dir;
+			tail.x = prt->x;
+			tail.y = prt->y;
+			
+			switch (tail.dir) {
+				case UP:
+					tail.x++;
+					tail.sym = 'v';
+					break;
+				case DOWN:
+					tail.x--;
+					tail.sym = '^';
+					break;
+				case LEFT:
+					tail.y++;
+					tail.sym = '>';
+					break;
+				case RIGTH:
+					tail.y--;
+					tail.sym = '<';
+					break;
+			}
+
+			snake.addInEnd(tail);
 		}
 
+		if (snake.getSize() > 1) {
+			snake.begin();
+			prt = snake.getElement();
+			for (size_t i = snake.getSize(); i > 1; i--) {
+				prt = snake.getElement();
+
+				prt->sym = 's';
+			}
+		
+			switch (prt->dir) {
+				case UP:
+					prt->sym = 'v';
+					break;
+				case DOWN:
+					prt->sym = '^';
+					break;
+				case LEFT:
+					prt->sym = '>';
+					break;
+				case RIGTH:
+					prt->sym = '<';
+					break;
+			}
+		}
+		
 		if (head->x == 0 || head->y == 0 || head->x == X_SIZE - 1 || head->y == Y_SIZE - 1) return;
 
+		if (snake.getSize() > 1) {
+			snake.begin();
+			SnakePart* prt = snake.getElement();
+			prt = snake.getElement();
+			do {
+				if (head->x == prt->x && head->y == prt->y) return;
+			} while (prt = snake.getElement());
+		}
+		
 		clear();
 		update();
+		cout << "Score: " << score << endl;
 	}
 }
 
@@ -335,12 +441,9 @@ void addLeader() {
 
 	leaders.addInEnd(tmp);
 
-	ofstream board("leader.brd");
-	leaders.begin();
-	Player* pl = leaders.getElement();
-	do {
-		board << pl->name << ';' << pl->score << endl;
-	} while (pl = leaders.getElement());
+	ofstream board("leader.brd", ios::app);
+	
+	board << tmp.name << ';' << tmp.score << endl;
 }
 
 void showLeaders(){
