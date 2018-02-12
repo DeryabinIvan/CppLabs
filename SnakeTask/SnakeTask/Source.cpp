@@ -365,7 +365,7 @@ void newGame() {
 
 		if (snake.getSize() > 1) {
 			snake.begin();
-			SnakePart* prt = snake.getElement();
+			prt = snake.getElement();
 			prt = snake.getElement();
 			do {
 				if (head->x == prt->x && head->y == prt->y) return;
@@ -444,6 +444,8 @@ void addLeader() {
 	ofstream board("leader.brd", ios::app);
 	
 	board << tmp.name << ';' << tmp.score << endl;
+
+	board.close();
 }
 
 void showLeaders(){
