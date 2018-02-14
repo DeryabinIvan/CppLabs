@@ -132,7 +132,7 @@ enum DIRECTION { UP, DOWN, LEFT, RIGTH };
 struct SnakePart {
 	unsigned char x, y;
 	DIRECTION dir;
-	char sym;
+	unsigned char sym;
 };
 
 void readLeaders();
@@ -145,8 +145,6 @@ void clear() { system("cls"); }
 List<Player> leaders;
 List<SnakePart> snake;
 Food food;
-
-unsigned char hx, hy;
 
 const unsigned char Y_SIZE = 30, X_SIZE = 20;
 
@@ -172,7 +170,6 @@ int main() {
 		switch (menu_key-'0'){
 			case START:
 				newGame();
-				snake.clear();
 				addLeader();
 				leaders.clear();
 				readLeaders();
@@ -183,7 +180,7 @@ int main() {
 				showLeaders();
 				break;
 			case HELP:
-				cout << "WASD - control; X-exit" << endl;
+				cout << "WASD - control; X or ESC-exit" << endl;
 				cout << "That`s all ;)"<<endl;
 				break;
 			case EXIT:
@@ -197,6 +194,21 @@ void update() {
 	bool drawed = false;
 	for (unsigned char i = 0; i < X_SIZE; i++){
 		for (unsigned char j = 0; j < Y_SIZE; j++) {
+			//рисуем углы
+			if (!i && !j) {
+				cout << (unsigned char)201;
+				continue;
+			}else if (!i && j == Y_SIZE - 1) {
+				cout << (unsigned char)187;
+				continue;
+			}else if (i == X_SIZE - 1 && !j) {
+				cout << (unsigned char)200;
+				continue;
+			}else if (i == X_SIZE - 1 && j == Y_SIZE - 1) {
+				cout << (unsigned char)188;
+				continue;
+			}
+
 			snake.begin();
 			SnakePart* prt = snake.getElement();
 			do {
@@ -209,79 +221,107 @@ void update() {
 
 			if (!drawed) {
 				if (food.x == i && food.y == j) cout << '@';
-				else if (i == 0) cout << '#';
-				else if (j == 0) cout << '#';
-				else if (i == X_SIZE - 1) cout << '#';
-				else if (j == Y_SIZE - 1) cout << '#';
+				else if (i == 0) cout << (unsigned char)205;
+				else if (j == 0) cout << (unsigned char)186;
+				else if (i == X_SIZE - 1) cout << (unsigned char)205;
+				else if (j == Y_SIZE - 1) cout << (unsigned char)186;
 				else cout << ' ';
 			}
 			drawed = false;
 		}
 		cout << endl;
 	}
+	cout << "Score: " << score << endl;
+	for (unsigned int i = 0; i < 50000000; i++);
 }
 
 void init() {
-	SnakePart head;
+	SnakePart head, tail;
 	head.sym = 'S';
-	hx = head.x = 10; hy = head.y = 10;
+	head.x = 10; head.y = 10;
 	head.dir = UP;
 
+	tail.sym = 'v';
+	tail.dir = UP;
+	tail.x = 11; tail.y = 10;
+
+	snake.clear();
+
 	snake.addInEnd(head);
+	snake.addInEnd(tail);
 
 	food.x = ran_x(generator);
 	food.y = ran_y(generator);
+
+	score = 0;
 }
 
 void newGame() {
 	init();
 	clear();
-	update();
 
 	snake.begin();
 	SnakePart* head = snake.getElement();
 
+	DIRECTION dir = head->dir;
+	bool keyPressed = false;
 	while (true){
-		char key;
-		DIRECTION dir;
+		update();
+		unsigned char key;
 		
-		key = _getch();
+		//если нажали на клавишу...
+		if(_kbhit()){
+			key = _getch();
+			keyPressed = true;
 
-		switch (key){
-			case 'w':
-				dir = UP;
-				break;
-			case 'a':
-				dir = LEFT;
-				break;
-			case 's':
-				dir = DOWN;
-				break;
-			case 'd':
-				dir = RIGTH;
-				break;
+			switch (key) {
+				case 'w':
+				case 230:
+					dir = UP;
+					break;
+				case 'a':
+				case 228:
+					dir = LEFT;
+					break;
+				case 's':
+				case 235:
+					dir = DOWN;
+					break;
+				case 'd':
+				case 162:
+					dir = RIGTH;
+					break;
 
-			case 'x':
-				cout << "Exit the game? y/n ";
-				cin >> key;
-				if (key == 'y') {
-					snake.clear();
-					return;
-				}
-				break;
+				case 27://ESC
+				case 'x':
+					cout << "Exit the game? y/n ";
+					cin >> key;
+					if (key == 'y') {
+						snake.clear();
+						return;
+					}
+					break;
 
-			default:
-				continue;
+				default:
+					continue;
+			}
 		}
 
-		DIRECTION tmp;
+		DIRECTION tmp = head->dir;
 
 		snake.begin();
 		SnakePart* prt = snake.getElement();
 		do {
-			tmp = prt->dir;
-			prt->dir = dir;
-			dir = tmp;
+			if (keyPressed) {
+				tmp = prt->dir;
+				prt->dir = dir;
+				dir = tmp;
+			} else {
+				dir = prt->dir;
+				prt->dir = tmp;
+				tmp = dir;
+			}
+			
 			switch (prt->dir){
 				case UP:
 					prt->x--;
@@ -297,6 +337,7 @@ void newGame() {
 					break;
 			}
 		} while (prt = snake.getElement());
+		keyPressed = false;
 
 		snake.begin();
 		prt = snake.getElement();
@@ -342,6 +383,8 @@ void newGame() {
 			for (size_t i = snake.getSize(); i > 1; i--) {
 				prt = snake.getElement();
 
+				if (head->x == prt->x && head->y == prt->y) return;
+
 				prt->sym = 's';
 			}
 		
@@ -363,18 +406,7 @@ void newGame() {
 		
 		if (head->x == 0 || head->y == 0 || head->x == X_SIZE - 1 || head->y == Y_SIZE - 1) return;
 
-		if (snake.getSize() > 1) {
-			snake.begin();
-			prt = snake.getElement();
-			prt = snake.getElement();
-			do {
-				if (head->x == prt->x && head->y == prt->y) return;
-			} while (prt = snake.getElement());
-		}
-		
 		clear();
-		update();
-		cout << "Score: " << score << endl;
 	}
 }
 
