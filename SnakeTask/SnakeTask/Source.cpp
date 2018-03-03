@@ -139,14 +139,15 @@ void readLeaders();
 void addLeader();
 void showLeaders();
 void newGame();
+void sortList(List<Player>&, List<Player>*);
 
 void clear() { system("cls"); }
 
-List<Player> leaders;
+List<Player> leaders, sorted_list;
 List<SnakePart> snake;
 Food food;
 
-const unsigned char Y_SIZE = 30, X_SIZE = 20;
+const unsigned char Y_SIZE = 20, X_SIZE = 10;
 
 //Генерация случайных координат еды
 //В С есть srand() и rand()...
@@ -170,13 +171,19 @@ int main() {
 		switch (menu_key-'0'){
 			case START:
 				newGame();
-				addLeader();
 				leaders.clear();
+				sorted_list.clear();
+
+				addLeader();
 				readLeaders();
+				sortList(leaders, &sorted_list);
 				showLeaders();
 				break;
 			case BOARD:
-				if(!leaders.getSize()) readLeaders();
+				if (!leaders.getSize()) {
+					readLeaders();
+					sortList(leaders, &sorted_list);
+				}
 				showLeaders();
 				break;
 			case HELP:
@@ -234,16 +241,15 @@ void update() {
 	cout << "Score: " << score << endl;
 	for (unsigned int i = 0; i < 50000000; i++);
 }
-
 void init() {
 	SnakePart head, tail;
 	head.sym = 'S';
-	head.x = 10; head.y = 10;
+	head.x = X_SIZE/2; head.y = Y_SIZE/2;
 	head.dir = UP;
 
 	tail.sym = 'v';
 	tail.dir = UP;
-	tail.x = 11; tail.y = 10;
+	tail.x = head.x+1; tail.y = head.y;
 
 	snake.clear();
 
@@ -255,7 +261,6 @@ void init() {
 
 	score = 0;
 }
-
 void newGame() {
 	init();
 	clear();
@@ -339,10 +344,6 @@ void newGame() {
 		} while (prt = snake.getElement());
 		keyPressed = false;
 
-		snake.begin();
-		prt = snake.getElement();
-		for (size_t i = snake.getSize(); i > 1; i--) prt = snake.getElement();
-
 		if (head->x == food.x && head->y == food.y) {
 			score++;
 			do{
@@ -350,6 +351,10 @@ void newGame() {
 				food.y = ran_y(generator);
 			} while (food.x == head->x || food.y == head->y);
 			
+			snake.begin();
+			prt = snake.getElement();
+			for (size_t i = snake.getSize(); i > 1; i--) prt = snake.getElement();
+
 			SnakePart tail;
 			tail.dir = prt->dir;
 			tail.x = prt->x;
@@ -412,6 +417,45 @@ void newGame() {
 
 const char* LEADERS_FILE = "leader.brd";
 
+bool findInList(unsigned int a, List<unsigned int>& list) {
+	if (list.getSize() < 1) return false;
+
+	list.begin();
+	unsigned int* elem;
+
+	while (elem = list.getElement()) {
+		if (*elem == a)
+			return true;
+	}
+
+	return false;
+}
+void sortList(List<Player>& list, List<Player>* sorted) {
+	static List<unsigned int> elems;
+
+	if (elems.getSize() == list.getSize()) {
+		elems.clear();
+		return;
+	}
+
+	list.begin();
+	Player* elem;
+
+	unsigned int max_score = 0;
+	while (elem = list.getElement()) {
+		if (elem->score > max_score && !findInList(elem->score, elems))
+			max_score = elem->score;
+	}
+
+	list.begin();
+	while (elem = list.getElement()) {
+		if (elem->score == max_score && !findInList(elem->score, elems))
+			sorted->addInEnd(*elem);
+	}
+	elems.addInEnd(max_score);
+	sortList(list, sorted);
+}
+
 void readLeaders() {
 	ifstream board(LEADERS_FILE);
 
@@ -423,14 +467,12 @@ void readLeaders() {
 		return;
 	}
 
-	unsigned int best = 0;
 	while (!board.eof()) {
 		char buf[255];
 
 		board.getline(buf, 255);
 
 		char *name, *score;
-
 		name = strtok(buf, ";");
 		score = strtok(nullptr, ";");
 
@@ -447,17 +489,12 @@ void readLeaders() {
 		tmp.name = new char[strlen(name)];
 		strcpy(tmp.name, name);
 
-		
 		tmp.score = atoi(score);
 
-		if (tmp.score > best) {
-			leaders.addInStart(tmp);
-			best = tmp.score;
-		}else leaders.addInEnd(tmp);
+		leaders.addInEnd(tmp);
 	}
 	board.close();
 }
-
 void addLeader() {
 	char buf[255];
 
@@ -465,31 +502,22 @@ void addLeader() {
 	cin.ignore();
 	cin.getline(buf, 255);
 
-	Player tmp;
-	tmp.name = new char[strlen(buf)];
-	strcpy(tmp.name, buf);
-
-	tmp.score = score;
-
-	leaders.addInEnd(tmp);
-
 	ofstream board("leader.brd", ios::app);
 	
-	board << tmp.name << ';' << tmp.score << endl;
+	board << buf << ';' << score << endl;
 
 	board.close();
 }
-
 void showLeaders(){
-	if (!leaders.getSize()) {
+	if (!sorted_list.getSize()) {
 		cout << "Leaderboard is empty! O_o " << endl;
 		return;
 	}
 
-	leaders.begin();
-	Player* pl = leaders.getElement();
+	sorted_list.begin();
+	Player* pl = sorted_list.getElement();
 	char pos = 1;
 	do {
 		cout << int(pos++) << ") " << pl->name << " " << pl->score << endl;
-	} while (pl = leaders.getElement());
+	} while ((pl = sorted_list.getElement()) && pos <= 10);
 }
