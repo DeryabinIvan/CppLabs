@@ -27,6 +27,8 @@ class Snake {
 			tmp_tail.x = tmp_head.x + 1; tmp_tail.y = tmp_head.y;
 			tmp_tail.sym = 'v';
 
+			tmp_head.dir = tmp_tail.dir = UP;
+
 			snake.clear();
 
 			snake.addInEnd(tmp_head);
@@ -40,7 +42,7 @@ class Snake {
 		unsigned char getY() { return head->y; }
 		DIRECTION getHeadDir() { return head->dir; }
 
-		void move(DIRECTION dir, bool changeDir) {
+		bool move(DIRECTION dir, bool changeDir) {
 			DIRECTION tmp = head->dir;
 			snake.begin();
 			SnakePart* prt = snake.getElement();
@@ -78,7 +80,7 @@ class Snake {
 				for (size_t i = snake.getSize(); i > 1; i--) {
 					prt = snake.getElement();
 
-					if (head->x == prt->x && head->y == prt->y) return;
+					if (head->x == prt->x && head->y == prt->y) return false;
 
 					prt->sym = 's';
 				}
@@ -98,6 +100,7 @@ class Snake {
 						break;
 				}
 			}
+			return true;
 		}
 
 		void draw(unsigned char xsize, unsigned char ysize, unsigned char fx, unsigned char fy) {
@@ -155,6 +158,8 @@ class Snake {
 
 			tmp_tail.x = tmp_head.x + 1; tmp_tail.y = tmp_head.y;
 			tmp_tail.sym = 'v';
+
+			tmp_head.dir = tmp_tail.dir = UP;
 
 			snake.clear();
 

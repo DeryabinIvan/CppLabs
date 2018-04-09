@@ -71,27 +71,32 @@ void Game::start() {
 
 			switch (key) {
 				case 'w':
+				case 'W':
 				case 230:
 					dir = UP;
 					break;
 				case 'a':
+				case 'A':
 				case 228:
 					dir = LEFT;
 					break;
 				case 's':
+				case 'S':
 				case 235:
 					dir = DOWN;
 					break;
 				case 'd':
+				case 'D':
 				case 162:
 					dir = RIGTH;
 					break;
 
 				case 27://ESC
 				case 'x':
+				case 'X':
 					cout << "Exit the game? y/n ";
 					cin >> key;
-					if (key == 'y') {
+					if (key == 'y' || key == 'Y') {
 						snake.clear();
 						return;
 					}
@@ -111,7 +116,9 @@ void Game::start() {
 
 			snake.addTail();
 		}
-		snake.move(dir, keyPressed);
+		if (!snake.move(dir, keyPressed)) {
+			return;
+		}
 		keyPressed = false;
 
 		if (snake.getX() == 0 || snake.getY() == 0 || snake.getX() == X_SIZE - 1 || snake.getY() == Y_SIZE - 1) return;
