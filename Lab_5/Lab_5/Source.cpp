@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-	enum MENU{ ENTER=1, FIND, PRINT, SORT, HELP, EXIT };
+	enum MENU{ ADD=1, REMOVE, FIND, PRINT, SORT, HELP, EXIT };
 	enum FIND_BY{ NAME=1, PHONE, DATE, RETURN };
 
 	short menu_key;
@@ -15,14 +15,27 @@ int main() {
 	StudentGroup group;
 
 	while (true) {
-		printf("Menu:\n\t%d) Add student\n\t%d) Find student\n\t%d) Print student group\n\t%d) Sort by birth date\n\t%d) Help\n\t%d) Exit\n", ENTER, FIND, PRINT, SORT, HELP, EXIT);
+		printf("Menu:\n\t%d) Add student\n\t%d) Remove student by FIO\n\t%d) Find student\n\t%d) Print student group\n\t%d) Sort by birth date\n\t%d) Help\n\t%d) Exit\n", ADD, REMOVE, FIND, PRINT, SORT, HELP, EXIT);
 
 		cin >> menu_key;
 		system("cls");
 		switch (menu_key) {
-			case ENTER:
+			case ADD:
 				cout << "Press enter to stop\n";
 				group.readFromStream(cin);
+				break;
+
+			case REMOVE:
+				system("cls");
+				cout << "Enter student FIO: ";
+
+				char buf[255];
+				cin.ignore();
+				cin.getline(buf, 255);
+
+				if (group.remove(buf)) cout << "Student deleted!\n";
+				else cout << "Nothing deleted\n";
+
 				break;
 
 			case FIND:

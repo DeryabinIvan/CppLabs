@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Date.h" />
+    <ClInclude Include="List.h" />
     <ClInclude Include="Student.h" />
     <ClInclude Include="StudentGroup.h" />
   </ItemGroup>

@@ -37,7 +37,6 @@ void StudentGroup::readFromStream(std::istream& in){
 	}
 }
 
-
 Student* StudentGroup::findByBDate(Date date) {
 	if (students.getSize() < 1) return nullptr;
 
@@ -68,6 +67,26 @@ Student* StudentGroup::findByNumber(const char* number) {
 		if (!strcmp((*st)->getNumber(), number))
 			return *st;
 	return nullptr;
+}
+
+bool StudentGroup::remove(const char* name){
+	Student* find = findByFIO(name);
+
+	if (!find) return false;
+
+	List<Student*> tmp;
+
+	students.begin();
+	Student** st;
+	for (st = students.getElement(); st; st = students.getElement())
+		if ((*st) != find) tmp.addInEnd(*st);
+
+	students.clear();
+	tmp.begin();
+	for (st = tmp.getElement(); st; st = tmp.getElement())
+		students.addInEnd(*st);
+
+	return true;
 }
 
 void StudentGroup::print() {

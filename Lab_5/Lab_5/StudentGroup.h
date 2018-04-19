@@ -23,6 +23,8 @@ class StudentGroup{
 		Student* findByFIO(const char* name);
 		Student* findByNumber(const char* number);
 
+		bool remove(const char* name);
+
 		void print();
 
 		void sortByBDate();
