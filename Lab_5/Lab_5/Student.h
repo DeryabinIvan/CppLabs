@@ -5,12 +5,11 @@
 #include <iostream>
 
 class Student{
-	public:
-		Student()=default;
-		Student(char* fio, Date bdate, char* number);
+	Date date;
+	char* fio, *number;
 
-		void setNumber(char* number);
-		void setFIO(char* fio);
+	public:
+		Student(char* fio, Date bdate, char* number);
 
 		const char* getFIO();
 		Date getBDate();

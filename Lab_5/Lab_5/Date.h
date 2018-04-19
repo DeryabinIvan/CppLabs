@@ -1,13 +1,15 @@
 #pragma once
 
 struct Date{
-	char day, month;
-	short year;
+	char day=-1, month=-1;
+	short year=-1;
 
 	bool operator>(const Date& d1) {
-		if (year  > d1.year) return true;
-		if (month > d1.month) return true;
-		if (day   > d1.day) return true;
+		if (year > d1.year) return true;
+		else if (year == d1.year) {
+			if (month > d1.month) return true;
+			else if (month == d1.month && day > d1.day) return true;
+		}
 
 		return false;
 	}

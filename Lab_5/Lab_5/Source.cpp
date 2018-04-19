@@ -7,29 +7,79 @@
 using namespace std;
 
 int main() {
-	Date date1, date2, date3;
+	enum MENU{ ENTER=1, FIND, PRINT, SORT, HELP, EXIT };
+	enum FIND_BY{ NAME=1, PHONE, DATE, RETURN };
 
-	date1.day = 15;
-	date1.month = 1;
-	date1.year = 1999;
+	short menu_key;
 
-	date2.day = 1;
-	date2.month = 10;
-	date2.year = 1988;
+	StudentGroup group;
 
-	date3.day = 30;
-	date3.month = 5;
-	date3.year = 2005;
+	while (true) {
+		printf("Menu:\n\t%d) Add student\n\t%d) Find student\n\t%d) Print student group\n\t%d) Sort by birth date\n\t%d) Help\n\t%d) Exit\n", ENTER, FIND, PRINT, SORT, HELP, EXIT);
 
-	Student din("X X X", date1, "79123168108");
-	Student t1 ("T T T", date2, "1234567890");
-	Student t2 ("Y Y Y", date3, "0987654321");
+		cin >> menu_key;
+		system("cls");
+		switch (menu_key) {
+			case ENTER:
+				cout << "Press enter to stop\n";
+				group.readFromStream(cin);
+				break;
 
-	din.print();
-	t1.print();
-	t2.print();
+			case FIND:
+				system("cls");
+				printf("Find student by..\n\t%d) Name\n\t%d) Phone\n\t%d) Birth day\n\t%d) Exit\n", NAME, PHONE, DATE, RETURN);
 
-	system("pause");
+				cin >> menu_key;
+
+				Student* find;
+				if (menu_key < RETURN) {
+					char buf[255];
+					cin.ignore();
+					cin.getline(buf, 255);
+
+					if (menu_key == NAME) find = group.findByFIO(buf);
+					else if (menu_key == PHONE) find = group.findByNumber(buf);
+					else {
+						Date d;
+
+						char *day, *month, *year;
+						day = strtok(buf, ".");
+						month = strtok(NULL, ".");
+						year = strtok(NULL, ".");
+
+						d.day = atoi(day);
+						d.month = atoi(month);
+						d.year = atoi(year);
+
+						find = group.findByBDate(d);
+					}
+
+					if (find) {
+						cout << "\nOK I find: ";
+						find->print();
+					}
+					else cout << "Sorry, noboby macth\n";
+				}
+				break;
+
+			case SORT:
+				group.sortByBDate();
+				break;
+
+			case HELP:
+				cout << "Student input format: FIO;PHONE;DATE (phone without '+')" << endl;
+				cout << "Date format: DD.MM.YYYY" << endl;
+				cout << endl;
+				break;
+
+			case PRINT:
+				group.print();
+				break;
+
+			case EXIT:
+				return 0;
+		}
+	}
 
 	return 0;
 }
