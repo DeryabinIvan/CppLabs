@@ -5,7 +5,7 @@ template<typename T> class List {
 		T data;
 		Node<T>* next;
 
-		void add(Node<T>* head, T new_data) {
+		void add(Node<T>* head, T& new_data) {
 			if (!head->next) {
 				head->next = new Node<T>{ new_data, nullptr };
 				return;
@@ -35,7 +35,7 @@ template<typename T> class List {
 			list_size = 0;
 		}
 
-		void addInEnd(T new_data) {
+		void addInEnd(T& new_data) {
 			if (!list_size) {
 				head->data = new_data;
 				list_size = 1;
@@ -45,7 +45,7 @@ template<typename T> class List {
 			head->add(head, new_data);
 			list_size++;
 		}
-		void addInStart(T new_data) {
+		void addInStart(T& new_data) {
 			if (!list_size) {
 				head->data = new_data;
 				list_size = 1;

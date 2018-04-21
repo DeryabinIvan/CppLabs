@@ -15,7 +15,7 @@ void StudentGroup::readFromStream(std::istream& in){
 		char buf[255];
 		in.getline(buf, 255);
 
-		if (strlen(buf) == 0) return;
+		if (buf[0]=='\0') return;
 
 		Date d;
 
