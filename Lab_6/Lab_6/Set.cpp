@@ -99,9 +99,11 @@ bool Set::operator==(const Set& a)const {
 
 std::ostream& operator<<(std::ostream& s, const Set& a){
 	s << "Set: ";
-	for (int i = 0; i < a.count; i++) {
+	if(a.count > 0)
+		for (int i = 0; i < a.count; i++) {
 		s << a.set[i] << ' ';
 	}
+	else s << "EMPTY";
 
 	return s;
 }
