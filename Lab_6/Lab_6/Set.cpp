@@ -36,13 +36,21 @@ void Set::add(int a) {
 void Set::remove(int a) {
 	if (count < 1) return;
 
-	for (int i = 0; i < count; i++)
-		if (set[i] == a) {
-			set[i] = 0;
-			count--;
-		}
+	int* copy = new int[size];
+	memcpy(copy, set, sizeof(int)*size);
+
+	delete[] set;
+	set = new int[size];
+
+	for (int i = 0, j = 0; i < size; i++) {
+		if (copy[i] != a)
+			set[j++] = copy[i];
+		else count--;
+	}
+
+	delete[] copy;
 }
-bool Set::contain(int a) {
+bool Set::contain(int a) const{
 	for (int i = 0; i < count; i++)
 		if (set[i] == a)
 			return true;
@@ -58,7 +66,7 @@ Set& Set::operator>>(int a) {
 	return *this;
 }
 
-Set& Set::operator+(Set& a){
+Set& Set::operator+(const Set& a){
 	Set *tmp = new Set();
 
 	for (int i = 0; i < count; i++)
@@ -70,7 +78,7 @@ Set& Set::operator+(Set& a){
 	}
 	return *tmp;
 }
-Set& Set::operator-(Set& b) {
+Set& Set::operator-(const Set& b) {
 	Set *tmp = new Set();
 
 	for (int i = 0; i < count; i++) {

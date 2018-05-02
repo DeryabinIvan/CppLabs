@@ -13,13 +13,13 @@ class Set{
 
 		void add(int a);
 		void remove(int a);
-		bool contain(int a);
+		bool contain(int a) const;
 
 		Set& operator<<(int);
 		Set& operator>>(int);
 
-		Set& operator+(Set&);
-		Set& operator-(Set&);
+		Set& operator+(const Set&);
+		Set& operator-(const Set&);
 
 		bool operator>(const Set&) const;
 		bool operator<(const Set&) const;

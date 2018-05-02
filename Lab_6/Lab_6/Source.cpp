@@ -17,7 +17,7 @@ int main() {
 	Set userSet, randomSet, sum, dif;
 
 	while (true) {
-		printf("Menu:\n\t%d) Add number\n\t%d) Remove number\n\t%d) Print set\n\t%d) Compare test\n\t%d) Help\n\t%d) Exit\n", ADD, REMOVE, PRINT, COMPARE_TEST, HELP, EXIT);
+		printf("Menu:\n\t%d) Add number\n\t%d) Remove number\n\t%d) Print set\n\t%d) Operations test\n\t%d) Help\n\t%d) Exit\n", ADD, REMOVE, PRINT, COMPARE_TEST, HELP, EXIT);
 
 		cin >> menu_key;
 		system("cls");
@@ -35,7 +35,7 @@ int main() {
 					char* tmp;
 					if (tmp = strtok(buf, " ")) {
 						do {
-							if (!isdigit(tmp[0])) {
+							if (!isdigit(tmp[0]) && tmp[0] != '-') {
 								cout << "Incorrect input! Please read help\n";
 								read = false;
 								break;
@@ -66,8 +66,8 @@ int main() {
 				for (int i = 0; i < 10; i++)
 					randomSet << (-100 + rand() % 200);
 
-				cout << "Random " << randomSet << endl;
-				cout << "User " << userSet << endl;
+				cout << "(R_SET) Random " << randomSet << endl;
+				cout << "(U_SET) User " << userSet << endl << endl;
 
 				cout << "R_SET bigger U_SET "; printBool(randomSet > userSet); cout << endl;
 				cout << "R_SET less U_SET "; printBool(randomSet < userSet); cout << endl;
