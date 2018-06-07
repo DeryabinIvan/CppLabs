@@ -24,20 +24,119 @@ void save(Map<char, Flat>& save);
 void load(Map<char, Flat>& load);
 
 int main() {
-	Map<char, Flat> request;
+	Map<char, Flat> cardFile;
+	Flat* request = nullptr;
 
-	char k1 = 'a', k2 = 'b';
-	request.add(k1, Flat(2, 20, 3, "sample"));
-	request.add(k2, Flat(3, 30, 4, "wut"));
+	enum MENU { ADD = 1, PRINT, FIND, SAVE, LOAD, HELP, EXIT };
 
-	cout << request << endl;
+	short menu_key;
 
-	save(request);
+	bool run = true;
 
-	request.clear();
-	load(request);
+	while (run) {
+		cout << "Card-file-based room finding program.\nMenu:\n";
+		cout << '\t' << ADD << ")Enter request\n"
+			<< '\t' << PRINT << ")Print card-file\n"
+			<< '\t' << FIND << ")Find request in card-file\n"
+			<< '\t' << SAVE << ")Save card-file\n"
+			<< '\t' << LOAD << ")Load card-file\n"
+			<< '\t' << HELP << ")Help\n"
+			<< '\t' << EXIT << ")Exit\n";
 
-	cout << request << endl;
+		cin >> menu_key;
+		system("cls");
+		switch (menu_key) {
+			case ADD:
+			{
+				cout << "Enter flat request: ";
+
+				char buf[255];
+				cin.ignore();
+				cin.getline(buf, 255);
+
+				//Adress
+				char* addr = strtok(buf, ",");
+
+				//Floor
+				char* sfloor = strtok(nullptr, ",");
+				int floor = atoi(sfloor);
+
+				//Rooms
+				char* srooms = strtok(nullptr, ",");
+				int rooms = atoi(srooms);
+
+				//Area
+				char* sarea = strtok(nullptr, ",");
+				float area = atof(sarea);
+
+				if (request) delete request;
+
+				request = new Flat(rooms, area, floor, addr);
+			}
+			break;
+
+			case PRINT:
+			if (request) cout << "Request: " << *request << endl;
+			if(cardFile.getKeysCount() > 0) cout << cardFile << endl;
+			else cout << "Card-file is empty\n";
+			break;
+
+			case FIND:
+			{
+				if (!request) {
+					cout << "You don`t enter request!\n";
+					continue;
+				}
+				char alpha = request->getStreet()[0];
+				alpha = tolower(alpha);
+
+				bool find = false;
+
+				if (cardFile.exist(alpha)) {
+					cardFile.begin();
+					for (const Flat* tmp = cardFile[alpha]; tmp; tmp = cardFile[alpha]) {
+						if (*request == *tmp) {
+							cout << *tmp << endl;
+							find = true;
+						}
+					}
+				} else find = false;
+
+				if (find) {
+					if (cardFile.getValCount(alpha) > 1) {
+						cardFile.findBy(*request).remove(alpha);
+					} else if (cardFile.getValCount(alpha) == 1) {
+						cardFile.findBy(*request).remove(alpha);
+					}
+				} else {
+					cout << "Sorry, but we nothing found.\n";
+					cardFile.add(alpha, *request);
+
+				}
+			}
+			break;
+
+			case SAVE:
+			save(cardFile);
+			break;
+
+			case LOAD:
+			cardFile.clear();
+			load(cardFile);
+			break;
+
+			case HELP:
+			cout << "Request systacsis: ADRESS, FLAT, ROOMS, AREA\n";
+			break;
+
+			case EXIT:
+			run = false;
+			continue;
+			break;
+		}
+	}
+
+	if(request) delete request;
 
 	system("pause");
 	return 0;
@@ -47,15 +146,20 @@ void save(Map<char, Flat>& save) {
 	ofstream file("card.file");
 	file << save;
 	file.close();
+
+	cout << "OK\n";
 }
 
 void load(Map<char, Flat>& load) {
 	ifstream file("card.file");
 	if (!file.is_open()) {
-		cout << "File not found! Check your save file in directory.";
+		cout << "File not found! Check your save file in directory.\n";
+		return;
 	}
 	
 	file >> load;
+
+	cout << "OK\n";
 }
 
 std::istream& operator>>(std::istream& is, Map<char, Flat>& m) {

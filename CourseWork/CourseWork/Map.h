@@ -195,13 +195,20 @@ inline ERROR_CODE Map<Key, Value>::remove(Key& key){
 	if (getValueSize(index) > 1 && !findValue) return MULTIPLIE_ELEMNTS;
 
 	if (getValueSize(index) > 1) {
+		size_t count = 0;
+
 		size_t newSize = valueSize[index] - 1;
 		Value* valCopy = new Value[newSize];
 		for (size_t i = 0, j = 0; i < valueSize[index]; i++) {
 			if (vals[index][i] != *findValue)
 				valCopy[j++] = vals[index][i];
+			else count++;
 		}
 		delete[] vals[index];
+		if (count == 0) {
+			delete[] valCopy;
+			return NOT_FIND;
+		}
 
 		vals[index] = new Value[newSize];
 		for (size_t i = 0; i < newSize; i++) {

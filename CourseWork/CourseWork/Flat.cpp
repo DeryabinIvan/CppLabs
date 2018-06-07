@@ -28,7 +28,7 @@ Flat::~Flat() {
 }
 
 bool Flat::operator==(const Flat& f) {
-	if (this->rooms == f.rooms && this->floor == f.floor && !strcmp(this->street, f.street)) {
+	if (this->rooms == f.rooms && this->floor == f.floor) {
 		if (this->area == f.area || ((this->area / f.area) * 100 <= 110 && (this->area / f.area) * 100 >= 90)) return true;
 	}
 
