@@ -21,7 +21,7 @@ template<class Key, class Value> class Map{
 		Map();
 		~Map();
 
-		void add(Key& key, Value val);
+		void add(Key& key, Value& val);
 		//Используется для ключей, содержащих несколько значений
 		//Полсе begin для получения всех значений последовательно вызываем get
 		//В конце get вернет nullptr
@@ -29,10 +29,33 @@ template<class Key, class Value> class Map{
 		const Value* get(Key& key);
 		const Value* operator[](Key& key);
 
-		Map& findBy(Value searchValue);
+		Map& findBy(Value& searchValue);
 		ERROR_CODE remove(Key& key);
+		void clear();
 
 		bool exist(Key& key);
+		size_t getKeysCount() { return lastKeyInd; }
+		size_t getValCount(Key& k) { return getValueSize(getKeyIndex(k)); }
+
+		friend std::ostream& operator<<(std::ostream& os, Map<Key, Value>& m) {
+			if (m.lastKeyInd == 0) return os;
+
+			for (size_t i = 0; i < m.lastKeyInd; i++) {
+				Key key = m.keys[i];
+				os << key << ": ";
+				m.begin();
+				for (size_t j = 0; j <= m.valueSize[i]-1; j++) {
+					os << *m[key];
+					if (m.valueSize[i] - j != 1)
+						os << ' ';
+				}
+				//m.iteratorPos = 0;
+				if (m.lastKeyInd - i != 1)
+					os << '\n';
+			}
+			return os;
+		}
+		friend std::istream& operator>>(std::istream& os, Map<Key, Value>& m);
 };
 
 template<class Key, class Value>
@@ -71,23 +94,29 @@ inline Map<Key, Value>::~Map(){
 	delete[] keys;
 	delete[] valueSize;
 	delete findValue;
+
+	size = 0;
+	iteratorPos = 0;
+	lastKeyInd = 0;
 }
 
 template<class Key, class Value>
-inline void Map<Key, Value>::add(Key& k, Value v){
+inline void Map<Key, Value>::add(Key& k, Value& v){
 	if (exist(k)) {
 		size_t keyIndex = getKeyIndex(k);
-		size_t lastVal = getValueSize(keyIndex)+1;
+		size_t lastVal = getValueSize(keyIndex);
 
 		Value* valCopy = new Value[lastVal];
-		memcpy(valCopy, vals[keyIndex], sizeof(Value)*lastVal);
+		for (size_t i = 0; i < lastVal; i++)
+			valCopy[i] = vals[keyIndex][i];
 
 		delete[] vals[keyIndex];
 		vals[keyIndex] = new Value[lastVal + 1];
 
-		memcpy(vals[keyIndex], valCopy, sizeof(Value)*lastVal);
+		for (size_t i = 0; i < lastVal; i++)
+			vals[keyIndex][i] = valCopy[i];
 		
-		vals[keyIndex][lastVal-1] = v;
+		vals[keyIndex][lastVal] = v;
 		valueSize[keyIndex]++;
 
 		delete[] valCopy;
@@ -137,7 +166,7 @@ inline const Value* Map<Key, Value>::get(Key& k){
 	size_t tmpIndex = getKeyIndex(k);
 	
 	if (getValueSize(tmpIndex) > 1) {
-		if (iteratorPos > getValueSize(tmpIndex)) {
+		if (iteratorPos > getValueMaxIndex(tmpIndex)) {
 			iteratorPos = 0;
 			return nullptr;
 		}
@@ -153,7 +182,7 @@ inline const Value* Map<Key, Value>::operator[](Key& key)
 }
 
 template<class Key, class Value>
-inline Map<Key, Value>& Map<Key, Value>::findBy(Value searchValue){
+inline Map<Key, Value>& Map<Key, Value>::findBy(Value& searchValue){
 	findValue = new Value(searchValue);
 	return *this;
 }
@@ -166,40 +195,74 @@ inline ERROR_CODE Map<Key, Value>::remove(Key& key){
 	if (getValueSize(index) > 1 && !findValue) return MULTIPLIE_ELEMNTS;
 
 	if (getValueSize(index) > 1) {
-		size_t newSize = valueSize[index]--;
+		size_t newSize = valueSize[index] - 1;
 		Value* valCopy = new Value[newSize];
-		for (size_t i = 0, j = 0; i < newSize; i++)
+		for (size_t i = 0, j = 0; i < valueSize[index]; i++) {
 			if (vals[index][i] != *findValue)
 				valCopy[j++] = vals[index][i];
+		}
 		delete[] vals[index];
 
 		vals[index] = new Value[newSize];
-		memcpy(vals, valCopy, sizeof(Value)*newSize);
+		for (size_t i = 0; i < newSize; i++) {
+			vals[index][i] = valCopy[i];
+		}
 		delete[] valCopy;
+
+		valueSize[index]--;
 	}
 	else {
-		Value** valCopy = new Value*[--size];
-		for (size_t i = 0, j = 0; i < size; i++)
+		Value** valCopy = new Value*[size-1];
+		for (size_t i = 0, j = 0; i < size; i++) {
 			if (i != index)
 				valCopy[j++] = vals[i];
+		}
+		size--;
+		//delete[] vals[index];
 		delete[] vals;
+		
 
 		vals = new Value*[size];
-		memcpy(vals, valCopy, sizeof(Value)*size);
+		for (size_t i = 0; i < size; i++) {
+			vals[i] = valCopy[i];
+		}
 		delete[] valCopy;
 
-		Key* keyCopy = new Key[--lastKeyInd];
-		for (size_t i = 0, j = 0; i < lastKeyInd; i++)
+		Key* keyCopy = new Key[lastKeyInd];
+		for (size_t i = 0, j = 0; i < lastKeyInd; i++) {
 			if (keys[i] != key)
 				keyCopy[j++] = keys[i];
+		}
+		lastKeyInd--;
 		delete[] keys;
 
 		keys = new Key[lastKeyInd];
-		memcpy(keys, keyCopy, sizeof(Key)*lastKeyInd);
+		for (size_t i = 0; i < lastKeyInd; i++) {
+			keys[i] = keyCopy[i];
+		}
 		delete[] keyCopy;
 	}
 	
 	return OK;
+}
+template<class Key, class Value>
+inline void Map<Key, Value>::clear() {
+	for (size_t i = 0; i < lastKeyInd; i++)
+		if (valueSize[i] > 1) delete[] vals[i];
+
+	delete[] vals;
+	delete[] keys;
+	delete[] valueSize;
+	delete findValue;
+
+	size = 10;
+
+	vals = new Value*[size];
+	valueSize = new size_t[size];
+	keys = new Key[size];
+
+	lastKeyInd = 0;
+	memset(valueSize, (size_t) 0, sizeof(size_t) * 10);
 }
 template<class Key, class Value>
 inline bool Map<Key, Value>::exist(Key& k){
@@ -209,3 +272,4 @@ inline bool Map<Key, Value>::exist(Key& k){
 	}
 	return false;
 }
+
