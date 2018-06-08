@@ -49,7 +49,6 @@ template<class Key, class Value> class Map{
 					if (m.valueSize[i] - j != 1)
 						os << ' ';
 				}
-				//m.iteratorPos = 0;
 				if (m.lastKeyInd - i != 1)
 					os << '\n';
 			}
@@ -225,7 +224,6 @@ inline ERROR_CODE Map<Key, Value>::remove(Key& key){
 				valCopy[j++] = vals[i];
 		}
 		size--;
-		//delete[] vals[index];
 		delete[] vals;
 		
 

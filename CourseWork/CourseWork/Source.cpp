@@ -53,6 +53,8 @@ int main() {
 				char buf[255];
 				cin.ignore();
 				cin.getline(buf, 255);
+				
+				if (buf[0] == '\0') continue;
 
 				//Adress
 				char* addr = strtok(buf, ",");
